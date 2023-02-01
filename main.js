@@ -1,1 +1,11 @@
-betterncm.utils.waitForElement(".m-list-recmd div h3 a[data-da-event]").then(e=>e.innerText="Hello BetterNCM!")
+function meow() {
+    console.log('喵喵喵！');
+}
+
+plugin.onConfig(tools => {
+    return dom("div", {},
+        dom("span", { innerText: '喵喵喵！' }),
+        tools.makeBtn('喵喵喵！', meow, true)
+    );
+});
+

@@ -1,17 +1,17 @@
 {
     "manifest_version": 1,
-    "name": "ExamplePlugin",
-    "slug": "example-plugin",
-    "version": "0.1.0",
+    "name": "KasaneCat",
+    "slug": "KasaneCat",
+    "version": ">= 0.1.0",
     "author": "Author",
     "description": "Description of the plugin", 
-    "betterncm_version": "^0.2.6",
+    "betterncm_version": ">= 1.0.0",
     "preview": "preview.png", 
     
     "injects": {
         "Main": [ 
             {
-                "file": "main.js" 
+                "file": "./main.js" 
             }
         ]
     }
