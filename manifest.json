@@ -3,15 +3,15 @@
     "name": "KasaneCat",
     "slug": "KasaneCat",
     "version": ">= 0.1.0",
-    "author": "Author",
-    "description": "Description of the plugin", 
+    "author": "DevBobcorn",
+    "description": "导出当前播放歌单", 
     "betterncm_version": ">= 1.0.0",
     "preview": "preview.png", 
     
     "injects": {
         "Main": [ 
             {
-                "file": "./main.js" 
+                "file": "./main.js"
             }
         ]
     }
