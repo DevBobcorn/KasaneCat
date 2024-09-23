@@ -1,7 +1,7 @@
 @echo off
 
 set PluginName=KasaneCat
-set Version=0.1.0
+set Version=0.1.2
 
 rem Call Bandizip to zip plugin files
 bz c temp.zip main.js manifest.json
