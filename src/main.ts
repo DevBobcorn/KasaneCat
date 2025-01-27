@@ -1,9 +1,11 @@
 import { Playlist } from "./ui/playlist";
+import { saveAs } from 'file-saver';
 
 var exportDataArray = [];
 
 export function initExport() {
     const containerElem = document.querySelector('#export_container');
+    const messageElem = document.querySelector('#export_message');
 
     const findWithPrefix = (arr: string[], prefix: string) => arr.find(
                 (item: string) => item.startsWith(prefix));
@@ -14,7 +16,7 @@ export function initExport() {
     }
 
     containerElem.innerHTML = '';
-    containerElem.append(dom('p', { innerText: '喵喵喵！请打开播放列表' }));
+    messageElem.innerHTML = '喵喵喵！请打开播放列表';
 
     betterncm.utils.waitForElement('.m-playlist .listbd .f-cb').then(result => {
         containerElem.innerHTML = '';
@@ -23,15 +25,16 @@ export function initExport() {
         containerElem.append(tableElem);
 
         const headRowElem = dom('tr', { },
-            dom('th', { innerText: '𝙉𝘾𝙈 𝙄𝙙' }),
-            dom('th', { innerText: '𝙏𝙄𝙏𝙇𝙀' }),
-            dom('th', { innerText: '𝘼𝙍𝙏𝙄𝙎𝙏𝙎' }),
-            dom('th', { innerText: '𝙇𝙀𝙉𝙂𝙏𝙃' })
+            dom('th', { innerText: '歌曲Id' }),
+            dom('th', { innerText: '标题' }),
+            dom('th', { innerText: '创作者' }),
+            dom('th', { innerText: '时长' })
         );
 
         tableElem.append(headRowElem);
 
         if (result !== undefined) {
+            messageElem.innerHTML = '当前播放列表：';
             const listElem = result.querySelector('.lst');
             exportDataArray.length = 0; // Clear this array
 
@@ -81,25 +84,30 @@ export function initExport() {
             });
 
         } else {
-            containerElem.innerHTML = '未能成功获取播放列表';
+            messageElem.innerHTML = '未能成功获取播放列表';
         }
     });
 }
 
-export async function exportJson() {
-    const dataDir = await betterncm.app.getDataPath();
-    const exportPath = `${dataDir}/playlist.json`;
+function getPathSep(dir: string) {
+    if (dir.indexOf('\\') >= 0) {
+        return '\\';
+    }
+    return '/';
+}
 
-    console.log(`Exporting data as json to ${exportPath}...`);
+export async function exportJson() {
+    const messageElem = document.querySelector('#export_message');
+
+    const dataDir = await betterncm.app.getDataPath();
+    const exportPath = `${dataDir}${getPathSep(dataDir)}playlist.json`;
 
     betterncm.fs.writeFile(exportPath, JSON.stringify(exportDataArray))
         .catch((err) => {
-            if (err) {
-                console.log(`Failed to write json file: ${err}`);
-            } else {
-                console.log('Successfully exported!');
-            }
+            messageElem.innerHTML = `未能成功写入json文件：${err}`;
         });
+    
+    messageElem.innerHTML = `播放列表已导出至${exportPath}`;
 }
 
 plugin.onConfig(()=>{
@@ -111,7 +119,20 @@ plugin.onConfig(()=>{
 plugin.onLoad(async () => {
     const cssText = `
         #kasane_cat_title {
-            font-size: 32px;
+            display: inline-flex;
+            font-size: 3em;
+            line-height: 0.9em;
+        }
+
+        #kasane_cat_op_panel {
+            display: inline-flex;
+            float: right;
+            gap: 10px;
+        }
+
+        #export_message {
+            font-size: 1.5em;
+            line-height: 3em;
         }
 
         .export-cell:hover, .export-cell.selected {
