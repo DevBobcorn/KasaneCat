@@ -1,10 +1,12 @@
-var exportDataArray = [ ]
+import { Playlist } from "./ui/playlist";
 
-function initExport() {
+var exportDataArray = [];
+
+export function initExport() {
     const containerElem = document.querySelector('#export_container');
 
-    const findWithPrefix = (arr, prefix) => arr.find(
-                (item) => item.startsWith(prefix));
+    const findWithPrefix = (arr: string[], prefix: string) => arr.find(
+                (item: string) => item.startsWith(prefix));
 
     if (containerElem === undefined) {
         console.log('Unable to find export container');
@@ -37,9 +39,9 @@ function initExport() {
                 const classArray = [...songElem.classList];
                 const ncmId = findWithPrefix(classArray, 'tid-').substring(4);
 
-                const title = songElem.querySelector('.title .tit').innerText;
+                const title = (songElem.querySelector('.title .tit') as HTMLElement).innerText;
                 const artistElems = songElem.querySelectorAll('.f-thide .s-fc1');
-                const length = songElem.querySelector('.col-5').innerText;
+                const length = (songElem.querySelector('.col-5') as HTMLElement).innerText;
 
                 const rowElem = dom('tr', { });
 
@@ -54,11 +56,11 @@ function initExport() {
                 ));
 
                 // Add artists cell
-                artists = [ ]
+                let artists = [ ]
                 const artistsCell = dom('td', { class: [ 'export-cell' ] });
                 artistElems.forEach(artistElem => {
-                    artists.push(artistElem.innerText);
-                    artistsCell.append(dom('span', { innerText: artistElem.innerText }));
+                    artists.push((artistElem as HTMLElement).innerText);
+                    artistsCell.append(dom('span', { innerText: (artistElem as HTMLElement).innerText }));
                 });
                 rowElem.append(artistsCell);
 
@@ -79,33 +81,31 @@ function initExport() {
             });
 
         } else {
-            console.log('Failed to get playlist element');
-        }
-    });
-
-}
-
-function exportJson() {
-    console.log('Exporting data as json...');
-
-    betterncm.fs.writeFile('C:/betterncm/ncm_list.json',
-            JSON.stringify(exportDataArray), (err) => {
-        if (err) {
-            console.log(`Failed to write json file: ${err}`);
-        } else {
-            console.log('Successfully exported!');
+            containerElem.innerHTML = '未能成功获取播放列表';
         }
     });
 }
 
-plugin.onConfig(tools => {
-    return dom('div', {},
-        dom('span', { innerText: '𝘒𝘈𝘚𝘈𝘕𝘌𝘾𝘼𝙏', id: 'kasane_cat_title' }),
-        dom('br', { }),
-        tools.makeBtn('获取当前播放列表', initExport, true),
-        tools.makeBtn('导出至json文件', exportJson, true),
-        dom('div', { id: 'export_container' })
-    );
+export async function exportJson() {
+    const dataDir = await betterncm.app.getDataPath();
+    const exportPath = `${dataDir}/playlist.json`;
+
+    console.log(`Exporting data as json to ${exportPath}...`);
+
+    betterncm.fs.writeFile(exportPath, JSON.stringify(exportDataArray))
+        .catch((err) => {
+            if (err) {
+                console.log(`Failed to write json file: ${err}`);
+            } else {
+                console.log('Successfully exported!');
+            }
+        });
+}
+
+plugin.onConfig(()=>{
+    const element = document.createElement("div");
+    ReactDOM.render(Playlist(), element);
+    return element;
 });
 
 plugin.onLoad(async () => {
