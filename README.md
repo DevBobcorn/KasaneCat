@@ -1,6 +1,6 @@
 # 𝘒𝘈𝘚𝘈𝘕𝘌𝘾𝘼𝙏
 
-A BetterNCM plugin which helps users export their current playlist.
+A BetterNCM plugin for exporting current playlist.
 
 一个用于导出当前播放列表的网易云音乐插件，基于BetterNCM开发。
 
