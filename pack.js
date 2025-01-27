@@ -31,23 +31,29 @@ function compressFolder(folderPath, outputZipFileName) {
     });
 }
 
-const folderToCompress = './dist';
+const targetFolder = './dist';
 
-fs.copyFile('./manifest.json', `${folderToCompress}/manifest.json`, (err) => {
-    if (err) throw err;
-    console.log('manifest.json was copied to dist folder');
-});
-
-fs.readFile('./manifest.json', 'utf8', (err, data) => {
+fs.readFile('./manifest.json', 'utf8', (err, text) => {
     if (err) {
         console.error('Error reading the file:', err);
         return;
     }
     try {
-        const jsonData = JSON.parse(data);
+        const jsonData = JSON.parse(text);
         const outputFileName = `./${jsonData['name']}-${jsonData['version']}.plugin`;
 
-        compressFolder(folderToCompress, outputFileName)
+        // Replace file paths
+        const newText = text.replaceAll('./dist', '.');
+
+        // Write manifest.json to target folder
+        fs.writeFile(`${targetFolder}/manifest.json`, newText, err => {
+            console.error('Error writing manifest.json:', err);
+        });
+
+        console.log('manifest.json created in target folder.');
+
+        // Pack everything up
+        compressFolder(targetFolder, outputFileName)
             .then(() => {
                 console.log(`Compression successful! ${outputFileName} created.`);
             })
@@ -55,6 +61,6 @@ fs.readFile('./manifest.json', 'utf8', (err, data) => {
                 console.error('Error during compression:', err);
             });
     } catch (parseErr) {
-        console.error('Error parsing JSON:', parseErr);
+        console.error('Error parsing manifest.json:', parseErr);
     }
 });
