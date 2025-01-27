@@ -1,2 +1,5 @@
 yarn.lock
 node_modules
+
+# Ignore generated plugin archives
+*.plugin
