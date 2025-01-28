@@ -43,7 +43,7 @@ fs.readFile('./manifest.json', 'utf8', (err, text) => {
         const outputFileName = `./${jsonData['name']}-${jsonData['version']}.plugin`;
 
         // Replace file paths
-        const newText = text.replaceAll('./dist', '.');
+        const newText = text.replaceAll(targetFolder, '.');
 
         // Write manifest.json to target folder
         fs.writeFile(`${targetFolder}/manifest.json`, newText, err => {

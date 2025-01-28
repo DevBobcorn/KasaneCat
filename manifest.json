@@ -2,7 +2,7 @@
     "manifest_version": 1,
     "name": "KasaneCat",
     "slug": "KasaneCat",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "author": "DevBobcorn",
     "description": "导出当前播放歌单", 
     "betterncm_version": ">= 1.0.0",
