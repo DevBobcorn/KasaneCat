@@ -14,6 +14,13 @@ function getInnerTextWithoutChildren(element: HTMLElement) {
     return text.trim();
 }
 
+function stripExtraInfo(info: string) {
+    if (info.startsWith('(') && info.endsWith(')')) {
+        return info.substring(1, info.length - 1);
+    }
+    return info;
+}
+
 export function initExport() {
     const containerElem = document.querySelector('#export_container');
     const messageElem = document.querySelector('#export_message');
@@ -77,8 +84,8 @@ export function initExport() {
                 let extraInfo = [ ];
                 const extraInfoCell = dom('td', { class: [ 'export-cell' ] });
                 extraInfoElems.forEach(titleInfoElem => {
-                    extraInfo.push((titleInfoElem as HTMLElement).innerText);
-                    extraInfoCell.append(dom('span', { innerText: (titleInfoElem as HTMLElement).innerText }));
+                    extraInfo.push(stripExtraInfo((titleInfoElem as HTMLElement).innerText));
+                    extraInfoCell.append(dom('span', { innerText: extraInfo.slice(-1)[0] }));
                 });
                 rowElem.append(extraInfoCell);
 
@@ -87,7 +94,7 @@ export function initExport() {
                 const artistsCell = dom('td', { class: [ 'export-cell' ] });
                 artistElems.forEach(artistElem => {
                     artists.push((artistElem as HTMLElement).innerText);
-                    artistsCell.append(dom('span', { innerText: (artistElem as HTMLElement).innerText }));
+                    artistsCell.append(dom('span', { innerText: artists.slice(-1)[0] }));
                 });
                 rowElem.append(artistsCell);
 
@@ -96,6 +103,7 @@ export function initExport() {
                     dom('p', { innerText: length })
                 ));
 
+                // Push export data
                 exportDataArray.push({
                     ncm_id: ncmId,
                     title: title,
@@ -153,7 +161,7 @@ export async function exportCsv() {
     const exportPath = `${dataDir}${getPathSep(dataDir)}playlist.csv`;
     
     let lines = exportDataArray.map(item => `${item['ncm_id']},${escapeCsvValue(item['title'])},${escapeCsvValue(item['extra_info'].join('&&'))},${escapeCsvValue(item['artists'].join('&&'))},${item['length']}`);
-    let csvText = `NCM Id,Title,Artists,Length\n${lines.join('\n')}`;
+    let csvText = `NCM Id,Title,Extra Info,Artists,Length\n${lines.join('\n')}`;
 
     betterncm.fs.writeFile(exportPath, csvText)
         .catch((err) => {
