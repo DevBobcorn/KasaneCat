@@ -1,7 +1,18 @@
 import { Playlist } from "./ui/playlist";
-import { saveAs } from 'file-saver';
 
 var exportDataArray = [];
+
+function getInnerTextWithoutChildren(element: HTMLElement) {
+    let text = '';
+    let child = element.firstChild;
+    while (child) {
+        if (child.nodeType === Node.TEXT_NODE) {
+            text += child.textContent;
+        }
+        child = child.nextSibling;
+    }
+    return text.trim();
+}
 
 export function initExport() {
     const containerElem = document.querySelector('#export_container');
@@ -27,6 +38,7 @@ export function initExport() {
         const headRowElem = dom('tr', { },
             dom('th', { innerText: '歌曲Id' }),
             dom('th', { innerText: '标题' }),
+            dom('th', { innerText: '附加信息' }),
             dom('th', { innerText: '创作者' }),
             dom('th', { innerText: '时长' })
         );
@@ -42,8 +54,11 @@ export function initExport() {
                 const classArray = [...songElem.classList];
                 const ncmId = findWithPrefix(classArray, 'tid-').substring(4);
 
-                const title = (songElem.querySelector('.title .tit') as HTMLElement).innerText;
+                const titleElemSrc = songElem.querySelector('.title .tit') as HTMLElement;
+                const title = getInnerTextWithoutChildren(titleElemSrc);
+
                 const artistElems = songElem.querySelectorAll('.f-thide .s-fc1');
+                const extraInfoElems = titleElemSrc.querySelectorAll('.s-fc5');
                 const length = (songElem.querySelector('.col-5') as HTMLElement).innerText;
 
                 const rowElem = dom('tr', { });
@@ -58,8 +73,17 @@ export function initExport() {
                     dom('p', { innerText: title })
                 ));
 
+                // Add extra info cell
+                let extraInfo = [ ];
+                const extraInfoCell = dom('td', { class: [ 'export-cell' ] });
+                extraInfoElems.forEach(titleInfoElem => {
+                    extraInfo.push((titleInfoElem as HTMLElement).innerText);
+                    extraInfoCell.append(dom('span', { innerText: (titleInfoElem as HTMLElement).innerText }));
+                });
+                rowElem.append(extraInfoCell);
+
                 // Add artists cell
-                let artists = [ ]
+                let artists = [ ];
                 const artistsCell = dom('td', { class: [ 'export-cell' ] });
                 artistElems.forEach(artistElem => {
                     artists.push((artistElem as HTMLElement).innerText);
@@ -75,6 +99,7 @@ export function initExport() {
                 exportDataArray.push({
                     ncm_id: ncmId,
                     title: title,
+                    extra_info: extraInfo,
                     artists: artists,
                     length: length
                 });
@@ -102,9 +127,37 @@ export async function exportJson() {
     const dataDir = await betterncm.app.getDataPath();
     const exportPath = `${dataDir}${getPathSep(dataDir)}playlist.json`;
 
-    betterncm.fs.writeFile(exportPath, JSON.stringify(exportDataArray))
+    betterncm.fs.writeFile(exportPath, JSON.stringify(exportDataArray, null, 4))
         .catch((err) => {
             messageElem.innerHTML = `未能成功写入json文件：${err}`;
+        });
+    
+    messageElem.innerHTML = `播放列表已导出至${exportPath}`;
+}
+
+function escapeCsvValue(value: string) {
+    if (value.indexOf(',') >= 0) {
+        // Replacement for 'replaceAll' for better compatibility
+        value = value.split('"').join('""');
+        // Wrap the whole value with double quotes
+        return `"${value}"`;
+    } else {
+        return value;
+    }
+}
+
+export async function exportCsv() {
+    const messageElem = document.querySelector('#export_message');
+
+    const dataDir = await betterncm.app.getDataPath();
+    const exportPath = `${dataDir}${getPathSep(dataDir)}playlist.csv`;
+    
+    let lines = exportDataArray.map(item => `${item['ncm_id']},${escapeCsvValue(item['title'])},${escapeCsvValue(item['extra_info'].join('&&'))},${escapeCsvValue(item['artists'].join('&&'))},${item['length']}`);
+    let csvText = `NCM Id,Title,Artists,Length\n${lines.join('\n')}`;
+
+    betterncm.fs.writeFile(exportPath, csvText)
+        .catch((err) => {
+            messageElem.innerHTML = `未能成功写入csv文件：${err}`;
         });
     
     messageElem.innerHTML = `播放列表已导出至${exportPath}`;
@@ -143,7 +196,12 @@ plugin.onLoad(async () => {
             border-radius: 4px;
             padding: 4px;
             margin-bottom: 8px;
-        }`;
+        }
+        
+        .export-cell span {
+            margin-right: 5px;
+        }
+        `;
     
     const styleTag = document.createElement("style");
     styleTag.innerHTML = cssText;

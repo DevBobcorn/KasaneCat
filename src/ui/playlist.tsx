@@ -1,4 +1,4 @@
-import { initExport, exportJson } from "../main";
+import { initExport, exportJson, exportCsv } from "../main";
 
 export function Playlist(){
     return (
@@ -8,6 +8,7 @@ export function Playlist(){
                 <div id='kasane_cat_op_panel'>
                     <a className='u-ibtn5 false' onClick={initExport}>获取当前播放列表</a>
                     <a className='u-ibtn5 false' onClick={exportJson}>导出至json文件</a>
+                    <a className='u-ibtn5 false' onClick={exportCsv}>导出至csv文件</a>
                 </div>
             </div>
             <div id='export_message'></div>
